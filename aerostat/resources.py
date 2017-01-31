@@ -12,11 +12,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
+
 import munch
+
+LOG = logging.getLogger(__name__)
 
 
 def load(filename):
     "Read the file and return the parsed data in a consistent format."
+    LOG.info('loading resource list from %s', filename)
 
     # Ensure the return value has a basic set of keys representing the
     # types of resources we expect to find.

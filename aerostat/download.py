@@ -12,9 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
 import os.path
 
 import progressbar
+
+LOG = logging.getLogger(__name__)
 
 
 class ProgressBarDownloader:
@@ -61,6 +64,7 @@ class Downloader:
         self._tasks = []
 
     def _add(self, resource_type, resource, output_path):
+        LOG.info('scheduling download of %s %s', resource_type, resource.name)
         self._tasks.append((resource_type, resource, output_path))
 
     def add_image(self, image):
@@ -70,20 +74,27 @@ class Downloader:
         return base
 
     def add_volume(self, volume):
-        print('DO NOT KNOW HOW TO SAVE VOLUME STATE YET', volume.name)
+        LOG.error('DO NOT KNOW HOW TO SAVE VOLUME STATE YET %s', volume.name)
 
     def start(self):
         # FIXME(dhellmann): start downloads in a separate thread or process
         for resource_type, resource, output_path in self._tasks:
             if os.path.exists(output_path):
-                print(
-                    'output file {} already exists, skipping download'.format(
-                        output_path))
+                LOG.info(
+                    'output file %s already exists, skipping download',
+                    output_path,
+                )
                 continue
             if resource_type == 'image':
-                print('downloading image {} to {}'.format(
+                LOG.info(
+                    'downloading image %s to %s',
                     resource.name,
                     output_path,
-                ))
+                )
                 with ProgressBarDownloader(output_path, resource.size) as out:
                     self.cloud.download_image(resource.name, output_file=out)
+                LOG.info(
+                    'downloaded image %s to %s',
+                    resource.name,
+                    output_path,
+                )

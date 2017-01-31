@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
 import os.path
 
 import yaml
@@ -19,6 +20,8 @@ import yaml
 from aerostat import download
 from aerostat import resolver
 from aerostat import resources
+
+LOG = logging.getLogger(__name__)
 
 
 def export_data(cloud, config, args):
@@ -55,6 +58,6 @@ def export_data(cloud, config, args):
     playbook_filename = os.path.join(output_path, 'playbook.yml')
     with open(playbook_filename, 'w', encoding='utf-8') as fd:
         yaml.dump(playbook, fd, default_flow_style=False, explicit_start=True)
-    print('wrote playbook to {}'.format(playbook_filename))
+    LOG.info('wrote playbook to %s', playbook_filename)
 
     downloader.start()

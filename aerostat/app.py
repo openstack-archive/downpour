@@ -74,5 +74,20 @@ def main():
 
     args = parser.parse_args(sys.argv[1:])
 
-    return args.func(config, args)
+    cloud_config = config.get_one_cloud(options=(args, []))
+    cloud = shade.OpenStackCloud(cloud_config=cloud_config)
+
+    root_logger = logging.getLogger('')
+    root_logger.setLevel(logging.DEBUG)
+    console = logging.StreamHandler(sys.stderr)
+    console_level = {
+        0: logging.WARNING,
+        1: logging.INFO,
+        2: logging.DEBUG,
+    }.get(args.verbose_level, logging.DEBUG)
+    console.setLevel(console_level)
+    formatter = logging.Formatter('[%(asctime)s] %(message)s')
+    console.setFormatter(formatter)
+    root_logger.addHandler(console)
+
     return args.func(cloud, config, args)
