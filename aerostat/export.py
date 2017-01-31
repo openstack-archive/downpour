@@ -27,7 +27,11 @@ LOG = logging.getLogger(__name__)
 def export_data(cloud, config, args):
     output_path = args.output_path
 
-    downloader = download.Downloader(output_path, cloud)
+    downloader = download.Downloader(
+        output_path,
+        cloud,
+        use_progress_bar=(args.progress and (args.verbose_level >= 1)),
+    )
     res = resolver.Resolver(cloud, downloader)
     tasks = []
 

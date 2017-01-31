@@ -42,6 +42,19 @@ def main():
         const=0,
         help='Suppress output except warnings and errors.',
     )
+    progress_group = parser.add_mutually_exclusive_group()
+    progress_group.add_argument(
+        '--progress', '-p',
+        default=True,
+        action='store_true',
+        help='show download progress',
+    )
+    progress_group.add_argument(
+        '--no-progress',
+        dest='progress',
+        action='store_false',
+        help='do not show download progress',
+    )
 
     config.register_argparse_arguments(parser, sys.argv, None)
     subparsers = parser.add_subparsers(title='commands')

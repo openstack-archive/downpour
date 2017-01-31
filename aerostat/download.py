@@ -58,9 +58,10 @@ class ProgressBarDownloader:
 
 class Downloader:
 
-    def __init__(self, output_dir, cloud):
+    def __init__(self, output_dir, cloud, use_progress_bar):
         self.output_dir = output_dir
         self.cloud = cloud
+        self.use_progress_bar = use_progress_bar
         self._tasks = []
 
     def _add(self, resource_type, resource, output_path):
@@ -91,8 +92,12 @@ class Downloader:
                     resource.name,
                     output_path,
                 )
-                with ProgressBarDownloader(output_path, resource.size) as out:
-                    self.cloud.download_image(resource.name, output_file=out)
+                if self.use_progress_bar:
+                    with ProgressBarDownloader(output_path, resource.size) as out:
+                        self.cloud.download_image(resource.name, output_file=out)
+                else:
+                    with open(output_path, 'wb') as out:
+                        self.cloud.download_image(resource.name, output_file=out)
                 LOG.info(
                     'downloaded image %s to %s',
                     resource.name,
