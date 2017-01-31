@@ -79,6 +79,30 @@ class Resolver:
         for sg in server.security_groups:
             sg_data = self.cloud.get_security_group(sg.name)
             yield from self.security_group(sg_data)
+        vol_names = []
         for vol in server.volumes:
             vol_data = self.cloud.get_volume(vol.id)
+            vol_names.append(vol_data.name)
             yield from self.volume(vol_data)
+        # FIXME(dhellmann): Need to handle networks other than 'public'.
+        # FIXME(dhellmann): Need to handle public IPs. Use auto_ip?
+        # FIXME(dhellmann): For now assume the image exists, but we may
+        #                   have to dump and recreate it.
+        # image = self.cloud.get_image(server.image.id)
+        # pprint.pprint(image)
+        # FIXME(dhellmann): It looks like ceph-backed servers have an
+        # image ID set to their volume or something? It's not a public
+        # image visible through the glance API.
+        server_data = {
+            'name': server.name,
+            'state': 'present',
+            # Attach to the networks by name.
+            'nics': list(server.networks.keys()),
+            # 'image': image.name if image else server.image.id,
+        }
+        if vol_names:
+            server_data['volumes'] = vol_names
+        yield {
+            'name': 'Creating server {}'.format(server.name),
+            'os_server': server_data,
+        }
