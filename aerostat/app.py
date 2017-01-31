@@ -23,47 +23,7 @@ import os_client_config
 import shade
 import yaml
 
-
-def build_security_group(cloud, memo, group):
-    if ('security_group', group.id) in memo:
-        return
-    memo.add(('security_group', group.id))
-    remote_groups = {}
-    pprint.pprint(group)
-    yield {
-        'name': 'Add security group {}'.format(group.name),
-        'os_security_group': {
-            'state': 'present',
-            'name': group.name,
-            'description': group.description,
-        },
-    }
-    for rule in group.security_group_rules:
-        rule_data = {
-            'direction': rule.direction,
-            'ethertype': rule.ethertype,
-            'protocol': rule.protocol,
-            'security_group': group.name,
-            'state': 'present',
-        }
-        for opt in ['port_range_min', 'port_range_max',
-                    'remote_group_id', 'remote_ip_prefix']:
-            value = rule.get(opt)
-            if value:
-                rule_data[opt] = value
-        if rule.remote_group_id:
-            if rule.remote_group_id not in remote_groups:
-                remote_group = cloud.get_security_group(rule.remote_group_id)
-                remote_groups[remote_group.id] = remote_group.name
-            rule_data['remote_group_id'] = remote_groups[rule.remote_group_id]
-        yield {'os_security_group_rule': rule_data}
-
-
-def build_server(cloud, memo, server):
-    pprint.pprint(server)
-    for sg in server.security_groups:
-        sg_data = cloud.get_security_group(sg.name)
-        yield from build_security_group(cloud, memo, sg_data)
+from aerostat import resolver
 
 
 def main():
@@ -75,12 +35,12 @@ def main():
 
     cloud_config = config.get_one_cloud(options=parsed_options)
     cloud = shade.OpenStackCloud(cloud_config=cloud_config)
+    res = resolver.Resolver(cloud)
 
     tasks = []
-    memo = set()
 
     for server in cloud.list_servers():
-        tasks.extend(build_server(cloud, memo, server))
+        tasks.extend(res.server(server))
 
     playbook = [
         {'hosts': 'localhost',
