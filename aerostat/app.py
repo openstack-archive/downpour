@@ -20,9 +20,11 @@ import pprint
 import sys
 
 import os_client_config
+import progressbar
 import shade
 import yaml
 
+from aerostat import download
 from aerostat import resolver
 
 
@@ -39,8 +41,9 @@ def main():
 
     tasks = []
 
-    for server in cloud.list_servers():
-        tasks.extend(res.server(server))
+    # for server in cloud.list_servers():
+    #     tasks.extend(res.server(server))
+    tasks.extend(res.server(cloud.get_server('dev1')))
 
     playbook = [
         {'hosts': 'localhost',
@@ -50,6 +53,11 @@ def main():
     ]
 
     print(yaml.dump(playbook, default_flow_style=False, explicit_start=True))
+
+    print('downloading snapshot')
+    image = cloud.get_image('dev1-sn1')
+    with download.ProgressBarDownloader('dev1-sn1.dat', image.size) as out:
+        cloud.download_image('dev1-sn1', output_file=out)
 
     # for volume in dev1.volumes:
     #     vol = cloud.get_volume(volume.id)
