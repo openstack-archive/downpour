@@ -29,7 +29,6 @@ class Resolver:
             return
         self._memo.add(('security_group', group.id))
         remote_groups = {}
-        pprint.pprint(group)
         yield {
             'name': 'Add security group {}'.format(group.name),
             'os_security_group': {
@@ -58,8 +57,28 @@ class Resolver:
                 rule_data['remote_group_id'] = remote_groups[rule.remote_group_id]
             yield {'os_security_group_rule': rule_data}
 
+    def volume(self, volume):
+        # FIXME(dhellmann): For now this only creates new empty
+        # volumes, and doesn't handle cases like booting from a volume
+        # or creating a volume from an image.
+        #
+        # FIXME(dhellmann): Need to snapshot the volume and then
+        # download the results.
+        yield {
+            'name': 'Create volume {}'.format(volume.name),
+            'os_volume': {
+                'display_name': volume.display_name,
+                'display_description': volume.display_description,
+                'size': volume.size,
+                'state': 'present',
+            },
+        }
+
     def server(self, server):
         pprint.pprint(server)
         for sg in server.security_groups:
             sg_data = self.cloud.get_security_group(sg.name)
             yield from self.security_group(sg_data)
+        for vol in server.volumes:
+            vol_data = self.cloud.get_volume(vol.id)
+            yield from self.volume(vol_data)
