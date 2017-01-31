@@ -37,13 +37,15 @@ def main():
 
     cloud_config = config.get_one_cloud(options=parsed_options)
     cloud = shade.OpenStackCloud(cloud_config=cloud_config)
-    res = resolver.Resolver(cloud)
+    downloader = download.Downloader('.', cloud)
+    res = resolver.Resolver(cloud, downloader)
 
     tasks = []
 
     # for server in cloud.list_servers():
     #     tasks.extend(res.server(server))
     tasks.extend(res.server(cloud.get_server('dev1')))
+    tasks.extend(res.image(cloud.get_image('testvol1-img1')))
 
     playbook = [
         {'hosts': 'localhost',
@@ -54,10 +56,13 @@ def main():
 
     print(yaml.dump(playbook, default_flow_style=False, explicit_start=True))
 
-    print('downloading snapshot')
-    image = cloud.get_image('dev1-sn1')
-    with download.ProgressBarDownloader('dev1-sn1.dat', image.size) as out:
-        cloud.download_image('dev1-sn1', output_file=out)
+    downloader.start()
+
+    # print('downloading volume snapshot')
+    # snapshot = cloud.get_volume_snapshot('testvol1-sn1')
+    # pprint.pprint(snapshot)
+    # # with download.ProgressBarDownloader('testvol1-sn1.dat', snapshot.size) as out:
+    # #     cloud.download_image('dev1-sn1', output_file=out)
 
     # for volume in dev1.volumes:
     #     vol = cloud.get_volume(volume.id)

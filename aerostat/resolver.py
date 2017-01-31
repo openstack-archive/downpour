@@ -20,9 +20,10 @@ import pprint
 
 class Resolver:
 
-    def __init__(self, cloud):
+    def __init__(self, cloud, downloader):
         self.cloud = cloud
         self._memo = set()
+        self._downloader = downloader
 
     def security_group(self, group):
         if ('security_group', group.id) in self._memo:
@@ -105,4 +106,21 @@ class Resolver:
         yield {
             'name': 'Creating server {}'.format(server.name),
             'os_server': server_data,
+        }
+
+    def image(self, image):
+        filename = self._downloader.add_image(image)
+        image_data = {
+            'name': image.name,
+            'container_format': image.container_format,
+            'disk_format': image.disk_format,
+            'min_disk': image.min_disk,
+            'min_ram': image.min_ram,
+        }
+        # FIXME(dhellmann): handle ramdisk property?
+        if filename:
+            image_data['filename'] = filename
+        yield {
+            'name': 'Creating image {}'.format(image.name),
+            'os_image': image_data,
         }

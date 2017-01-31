@@ -15,6 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os.path
+
 import progressbar
 
 
@@ -31,6 +33,7 @@ class ProgressBarDownloader:
         self.bar = progressbar.ProgressBar(
             widgets=[
                 progressbar.Percentage(),
+                ' ',
                 progressbar.Bar(),
                 progressbar.FileTransferSpeed(),
                 ' ',
@@ -51,3 +54,34 @@ class ProgressBarDownloader:
             self.fd.write(block)
             self.amt_read += len(block)
             self.bar.update(self.amt_read)
+
+
+class Downloader:
+
+    def __init__(self, output_dir, cloud):
+        self.output_dir = output_dir
+        self.cloud = cloud
+        self._tasks = []
+
+    def _add(self, resource_type, resource, output_path):
+        self._tasks.append((resource_type, resource, output_path))
+
+    def add_image(self, image):
+        base = image.name + '.dat'
+        output_path = os.path.join(self.output_dir, base)
+        self._add('image', image, output_path)
+        return base
+
+    def start(self):
+        # FIXME(dhellmann): start downloads in a separate thread or process
+        for resource_type, resource, output_path in self._tasks:
+            if os.path.exists(output_path):
+                print('output file {} already exists, skipping download'.format(output_path))
+                continue
+            if resource_type == 'image':
+                print('downloading image {} to {}'.format(
+                    resource.name,
+                    output_path,
+                ))
+                with ProgressBarDownloader(output_path, resource.size) as out:
+                    self.cloud.download_image(resource.name, output_file=out)
