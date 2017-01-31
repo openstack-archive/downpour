@@ -26,6 +26,8 @@ import shade
 import yaml
 
 from aerostat import download
+from aerostat import export
+from aerostat import query
 from aerostat import resolver
 from aerostat import resources
 
@@ -34,64 +36,51 @@ def main():
     parser = argparse.ArgumentParser()
     config = os_client_config.OpenStackConfig()
 
+    verbose_group = parser.add_mutually_exclusive_group()
+    verbose_group.add_argument(
+        '--verbose', '-v',
+        action='count',
+        dest='verbose_level',
+        default=1,
+        help='Increase verbosity of output. Can be repeated.',
+    )
+    verbose_group.add_argument(
+        '-q', '--quiet',
+        action='store_const',
+        dest='verbose_level',
+        const=0,
+        help='Suppress output except warnings and errors.',
+    )
+
     config.register_argparse_arguments(parser, sys.argv, None)
-    parser.add_argument(
+    subparsers = parser.add_subparsers(title='commands')
+
+    do_export = subparsers.add_parser(
+        'export',
+        help='export data',
+    )
+    do_export.add_argument(
         'resource_file',
         help='the name of the file listing resources to be exported',
     )
-    parser.add_argument(
+    do_export.add_argument(
         'output_path',
         default='.',
         nargs='?',
         help='the name of a directory to use for output file(s)',
     )
+    do_export.set_defaults(func=export.export_data)
 
-    args, remaining = parser.parse_known_args(sys.argv[1:])
-    output_path = args.output_path
+    do_query = subparsers.add_parser(
+        'query',
+        help='query to build an export list',
+    )
+    do_query.add_argument(
+        'resource_file',
+        help='the name of the file listing resources to be updated',
+    )
+    do_query.set_defaults(func=query.query_data)
 
-    cloud_config = config.get_one_cloud(options=(args, remaining))
-    cloud = shade.OpenStackCloud(cloud_config=cloud_config)
-    downloader = download.Downloader(output_path, cloud)
-    res = resolver.Resolver(cloud, downloader)
-    tasks = []
+    args = parser.parse_args(sys.argv[1:])
 
-    # Export independent resources. The resolver handles dependencies
-    # automatically.
-    to_export = resources.load(args.resource_file)
-
-    for image_info in to_export.images:
-        image = cloud.get_image(image_info.name)
-        tasks.extend(res.image(image))
-
-    for volume_info in to_export.volumes:
-        volume = cloud.get_volume(volume_info.name)
-        tasks.extend(res.volume(volume, save_state=volume_info.save_state))
-
-    for server_info in to_export.servers:
-        server = cloud.get_server(server_info.name)
-        tasks.extend(res.server(server, save_state=server_info.save_state))
-
-    playbook = [
-        # The default playbook is configured to run instructions
-        # locally to talk to the cloud API.
-        {'hosts': 'localhost',
-         'connection': 'local',
-         'tasks': tasks,
-         },
-    ]
-    playbook_filename = os.path.join(output_path, 'playbook.yml')
-    with open(playbook_filename, 'w', encoding='utf-8') as fd:
-        yaml.dump(playbook, fd, default_flow_style=False, explicit_start=True)
-    print('wrote playbook to {}'.format(playbook_filename))
-
-    downloader.start()
-
-    # print('downloading volume snapshot')
-    # snapshot = cloud.get_volume_snapshot('testvol1-sn1')
-    # pprint.pprint(snapshot)
-    # # with download.ProgressBarDownloader('testvol1-sn1.dat', snapshot.size) as out:
-    # #     cloud.download_image('dev1-sn1', output_file=out)
-
-    # for volume in dev1.volumes:
-    #     vol = cloud.get_volume(volume.id)
-    #     pprint.pprint(vol)
+    return args.func(config, args)
