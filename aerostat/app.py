@@ -16,6 +16,7 @@
 # under the License.
 
 import argparse
+import os.path
 import pprint
 import sys
 
@@ -33,11 +34,23 @@ def main():
     config = os_client_config.OpenStackConfig()
 
     config.register_argparse_arguments(parser, sys.argv, None)
-    parsed_options = parser.parse_known_args(sys.argv[1:])
+    parser.add_argument(
+        'resource_file',
+        help='the name of the file listing resources to be exported',
+    )
+    parser.add_argument(
+        'output_path',
+        default='.',
+        nargs='?',
+        help='the name of a directory to use for output file(s)',
+    )
 
-    cloud_config = config.get_one_cloud(options=parsed_options)
+    args, remaining = parser.parse_known_args(sys.argv[1:])
+    output_path = args.output_path
+
+    cloud_config = config.get_one_cloud(options=(args, remaining))
     cloud = shade.OpenStackCloud(cloud_config=cloud_config)
-    downloader = download.Downloader('.', cloud)
+    downloader = download.Downloader(output_path, cloud)
     res = resolver.Resolver(cloud, downloader)
 
     tasks = []
@@ -61,7 +74,10 @@ def main():
          },
     ]
 
-    print(yaml.dump(playbook, default_flow_style=False, explicit_start=True))
+    playbook_filename = os.path.join(output_path, 'playbook.yml')
+    with open(playbook_filename, 'w', encoding='utf-8') as fd:
+        yaml.dump(playbook, fd, default_flow_style=False, explicit_start=True)
+    print('wrote playbook to {}'.format(playbook_filename))
 
     downloader.start()
 
