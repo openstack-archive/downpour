@@ -21,6 +21,8 @@ import munch
 def load(filename):
     "Read the file and return the parsed data in a consistent format."
 
+    # Ensure the return value has a basic set of keys representing the
+    # types of resources we expect to find.
     to_return = munch.Munch(
         servers=[],
         volumes=[],
@@ -29,6 +31,16 @@ def load(filename):
 
     with open(filename, 'r', encoding='utf-8') as fd:
         contents = munch.Munch.fromYAML(fd.read())
-
     to_return.update(contents)
+
+    # Ensure all entries have consistent sets of keys so the rest of
+    # the app doesn't have to check every time it wants to use a
+    # value.
+    for s in to_return.servers:
+        if 'save_state' not in s:
+            s['save_state'] = True
+    for s in to_return.volumes:
+        if 'save_state' not in s:
+            s['save_state'] = True
+
     return to_return

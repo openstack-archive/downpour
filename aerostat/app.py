@@ -65,11 +65,11 @@ def main():
 
     for volume_info in to_export.volumes:
         volume = cloud.get_volume(volume_info.name)
-        tasks.extend(res.volume(volume))
+        tasks.extend(res.volume(volume, save_state=volume_info.save_state))
 
     for server_info in to_export.servers:
         server = cloud.get_server(server_info.name)
-        tasks.extend(res.server(server))
+        tasks.extend(res.server(server, save_state=server_info.save_state))
 
     playbook = [
         # The default playbook is configured to run instructions

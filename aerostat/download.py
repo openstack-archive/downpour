@@ -72,6 +72,9 @@ class Downloader:
         self._add('image', image, output_path)
         return base
 
+    def add_volume(self, volume):
+        print('DO NOT KNOW HOW TO SAVE VOLUME STATE YET', volume.name)
+
     def start(self):
         # FIXME(dhellmann): start downloads in a separate thread or process
         for resource_type, resource, output_path in self._tasks:

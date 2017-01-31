@@ -58,13 +58,15 @@ class Resolver:
                 rule_data['remote_group_id'] = remote_groups[rule.remote_group_id]
             yield {'os_security_group_rule': rule_data}
 
-    def volume(self, volume):
+    def volume(self, volume, save_state):
         # FIXME(dhellmann): For now this only creates new empty
         # volumes, and doesn't handle cases like booting from a volume
         # or creating a volume from an image.
         #
         # FIXME(dhellmann): Need to snapshot the volume and then
         # download the results.
+        if save_state:
+            self._downloader.add_volume(volume)
         yield {
             'name': 'Create volume {}'.format(volume.name),
             'os_volume': {
@@ -75,8 +77,7 @@ class Resolver:
             },
         }
 
-    def server(self, server):
-        pprint.pprint(server)
+    def server(self, server, save_state):
         for sg in server.security_groups:
             sg_data = self.cloud.get_security_group(sg.name)
             yield from self.security_group(sg_data)
@@ -84,7 +85,7 @@ class Resolver:
         for vol in server.volumes:
             vol_data = self.cloud.get_volume(vol.id)
             vol_names.append(vol_data.name)
-            yield from self.volume(vol_data)
+            yield from self.volume(vol_data, save_state)
         # FIXME(dhellmann): Need to handle networks other than 'public'.
         # FIXME(dhellmann): Need to handle public IPs. Use auto_ip?
         # FIXME(dhellmann): For now assume the image exists, but we may
