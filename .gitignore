@@ -58,4 +58,4 @@ ChangeLog
 releasenotes/build
 /clouds.yaml
 /*.dat
-/playbook.yml
+/*.yml

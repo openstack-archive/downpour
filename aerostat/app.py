@@ -27,6 +27,7 @@ import yaml
 
 from aerostat import download
 from aerostat import resolver
+from aerostat import resources
 
 
 def main():
@@ -52,28 +53,32 @@ def main():
     cloud = shade.OpenStackCloud(cloud_config=cloud_config)
     downloader = download.Downloader(output_path, cloud)
     res = resolver.Resolver(cloud, downloader)
-
     tasks = []
 
-    # FIXME(dhellmann): We want the list of things to download to be
-    # part of the inputs to the program, but for now let's just grab
-    # all servers and private images..
+    # Export independent resources. The resolver handles dependencies
+    # automatically.
+    to_export = resources.load(args.resource_file)
 
-    for server in cloud.list_servers():
-        tasks.extend(res.server(server))
-
-    for image in cloud.list_images():
-        if image.visibility != 'private':
-            continue
+    for image_info in to_export.images:
+        image = cloud.get_image(image_info.name)
         tasks.extend(res.image(image))
 
+    for volume_info in to_export.volumes:
+        volume = cloud.get_volume(volume_info.name)
+        tasks.extend(res.volume(volume))
+
+    for server_info in to_export.servers:
+        server = cloud.get_server(server_info.name)
+        tasks.extend(res.server(server))
+
     playbook = [
+        # The default playbook is configured to run instructions
+        # locally to talk to the cloud API.
         {'hosts': 'localhost',
          'connection': 'local',
          'tasks': tasks,
          },
     ]
-
     playbook_filename = os.path.join(output_path, 'playbook.yml')
     with open(playbook_filename, 'w', encoding='utf-8') as fd:
         yaml.dump(playbook, fd, default_flow_style=False, explicit_start=True)
