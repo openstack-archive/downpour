@@ -64,11 +64,8 @@ def main():
     parsed_options = parser.parse_known_args(sys.argv[1:])
 
     cloud_config = config.get_one_cloud(options=parsed_options)
-
     cloud = shade.OpenStackCloud(cloud_config=cloud_config)
 
-    # for server in cloud.list_servers():
-    #     pprint.pprint(server)
 
     dev1 = cloud.get_server('dev1')
     pprint.pprint(dev1)
