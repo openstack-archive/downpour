@@ -79,7 +79,9 @@ class Downloader:
         # FIXME(dhellmann): start downloads in a separate thread or process
         for resource_type, resource, output_path in self._tasks:
             if os.path.exists(output_path):
-                print('output file {} already exists, skipping download'.format(output_path))
+                print(
+                    'output file {} already exists, skipping download'.format(
+                        output_path))
                 continue
             if resource_type == 'image':
                 print('downloading image {} to {}'.format(

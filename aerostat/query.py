@@ -16,5 +16,5 @@
 # under the License.
 
 
-def query_data(config, args):
+def query_data(cloud, config, args):
     raise NotImplementedError('query not implemented')

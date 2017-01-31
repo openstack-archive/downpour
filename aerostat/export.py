@@ -15,27 +15,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import argparse
 import os.path
-import pprint
-import sys
 
-import os_client_config
-import progressbar
-import shade
 import yaml
 
 from aerostat import download
-from aerostat import export
 from aerostat import resolver
 from aerostat import resources
 
 
-def export_data(config, args):
+def export_data(cloud, config, args):
     output_path = args.output_path
 
-    cloud_config = config.get_one_cloud(options=(args, []))
-    cloud = shade.OpenStackCloud(cloud_config=cloud_config)
     downloader = download.Downloader(output_path, cloud)
     res = resolver.Resolver(cloud, downloader)
     tasks = []
@@ -70,13 +61,3 @@ def export_data(config, args):
     print('wrote playbook to {}'.format(playbook_filename))
 
     downloader.start()
-
-    # print('downloading volume snapshot')
-    # snapshot = cloud.get_volume_snapshot('testvol1-sn1')
-    # pprint.pprint(snapshot)
-    # # with download.ProgressBarDownloader('testvol1-sn1.dat', snapshot.size) as out:
-    # #     cloud.download_image('dev1-sn1', output_file=out)
-
-    # for volume in dev1.volumes:
-    #     vol = cloud.get_volume(volume.id)
-    #     pprint.pprint(vol)

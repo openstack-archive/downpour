@@ -16,20 +16,14 @@
 # under the License.
 
 import argparse
-import os.path
-import pprint
+import logging
 import sys
 
 import os_client_config
-import progressbar
 import shade
-import yaml
 
-from aerostat import download
 from aerostat import export
 from aerostat import query
-from aerostat import resolver
-from aerostat import resources
 
 
 def main():
@@ -84,3 +78,4 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     return args.func(config, args)
+    return args.func(cloud, config, args)
