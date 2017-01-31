@@ -24,23 +24,26 @@ import shade
 import yaml
 
 
-def build_security_group(cloud, group):
-    data = cloud.get_security_group(group.name)
+def build_security_group(cloud, memo, group):
+    if ('security_group', group.id) in memo:
+        return
+    memo.add(('security_group', group.id))
     remote_groups = {}
-    pprint.pprint(data)
+    pprint.pprint(group)
     yield {
+        'name': 'Add security group {}'.format(group.name),
         'os_security_group': {
             'state': 'present',
-            'name': data.name,
-            'description': data.description,
+            'name': group.name,
+            'description': group.description,
         },
     }
-    for rule in data.security_group_rules:
+    for rule in group.security_group_rules:
         rule_data = {
             'direction': rule.direction,
             'ethertype': rule.ethertype,
             'protocol': rule.protocol,
-            'security_group': data.name,
+            'security_group': group.name,
             'state': 'present',
         }
         for opt in ['port_range_min', 'port_range_max',
@@ -56,6 +59,13 @@ def build_security_group(cloud, group):
         yield {'os_security_group_rule': rule_data}
 
 
+def build_server(cloud, memo, server):
+    pprint.pprint(server)
+    for sg in server.security_groups:
+        sg_data = cloud.get_security_group(sg.name)
+        yield from build_security_group(cloud, memo, sg_data)
+
+
 def main():
     parser = argparse.ArgumentParser()
     config = os_client_config.OpenStackConfig()
@@ -66,16 +76,20 @@ def main():
     cloud_config = config.get_one_cloud(options=parsed_options)
     cloud = shade.OpenStackCloud(cloud_config=cloud_config)
 
+    tasks = []
+    memo = set()
 
-    dev1 = cloud.get_server('dev1')
-    pprint.pprint(dev1)
+    for server in cloud.list_servers():
+        tasks.extend(build_server(cloud, memo, server))
 
-    content = []
+    playbook = [
+        {'hosts': 'localhost',
+         'connection': 'local',
+         'tasks': tasks,
+         },
+    ]
 
-    for sg in dev1.security_groups:
-        content.extend(build_security_group(cloud, sg))
-
-    print(yaml.dump(content, default_flow_style=False, explicit_start=True))
+    print(yaml.dump(playbook, default_flow_style=False, explicit_start=True))
 
     # for volume in dev1.volumes:
     #     vol = cloud.get_volume(volume.id)
