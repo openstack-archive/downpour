@@ -42,10 +42,17 @@ def main():
 
     tasks = []
 
-    # for server in cloud.list_servers():
-    #     tasks.extend(res.server(server))
-    tasks.extend(res.server(cloud.get_server('dev1')))
-    tasks.extend(res.image(cloud.get_image('testvol1-img1')))
+    # FIXME(dhellmann): We want the list of things to download to be
+    # part of the inputs to the program, but for now let's just grab
+    # all servers and private images..
+
+    for server in cloud.list_servers():
+        tasks.extend(res.server(server))
+
+    for image in cloud.list_images():
+        if image.visibility != 'private':
+            continue
+        tasks.extend(res.image(image))
 
     playbook = [
         {'hosts': 'localhost',
