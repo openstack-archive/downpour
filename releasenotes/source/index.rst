@@ -1,5 +1,5 @@
 ============================================
- aerostat Release Notes
+ downpour Release Notes
 ============================================
 
 .. toctree::

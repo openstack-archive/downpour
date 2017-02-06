@@ -2,6 +2,6 @@
 Usage
 ========
 
-To use aerostat in a project::
+To use downpour in a project::
 
-    import aerostat
+    import downpour

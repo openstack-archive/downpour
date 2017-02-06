@@ -13,13 +13,13 @@
 # under the License.
 
 """
-test_aerostat
+test_downpour
 ----------------------------------
 
-Tests for `aerostat` module.
+Tests for `downpour` module.
 """
 
-from aerostat.tests import base
+from downpour.tests import base
 
 
 class TestAerostat(base.TestCase):

@@ -16,4 +16,4 @@ import pbr.version
 
 
 __version__ = pbr.version.VersionInfo(
-    'aerostat').version_string()
+    'downpour').version_string()

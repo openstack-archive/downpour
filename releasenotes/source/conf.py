@@ -55,7 +55,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'aerostat Release Notes'
+project = u'downpour Release Notes'
 copyright = u'2016, OpenStack Foundation'
 
 # The version info for the project you're documenting, acts as replacement for

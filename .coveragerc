@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = aerostat
+source = downpour
 
 [report]
 ignore_errors = True

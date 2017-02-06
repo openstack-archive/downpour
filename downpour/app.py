@@ -19,8 +19,8 @@ import sys
 import os_client_config
 import shade
 
-from aerostat import export
-from aerostat import query
+from downpour import export
+from downpour import query
 
 
 def main():

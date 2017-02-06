@@ -17,9 +17,9 @@ import os.path
 
 import yaml
 
-from aerostat import download
-from aerostat import resolver
-from aerostat import resources
+from downpour import download
+from downpour import resolver
+from downpour import resources
 
 LOG = logging.getLogger(__name__)
 

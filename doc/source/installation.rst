@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ pip install aerostat
+    $ pip install downpour
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv aerostat
-    $ pip install aerostat
+    $ mkvirtualenv downpour
+    $ pip install downpour
