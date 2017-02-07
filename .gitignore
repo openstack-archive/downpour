@@ -62,3 +62,4 @@ releasenotes/build
 /demo/keys
 /demo/*.retry
 /demo/venv
+/demo/export/*

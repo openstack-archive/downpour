@@ -1,0 +1,3 @@
+# Resource file for downpour using the instance created in tiny.yml.
+servers:
+  - name: downpour-demo-tiny

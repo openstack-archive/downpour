@@ -23,3 +23,22 @@ Using
   ::
 
     $ pip install -r requirements.txt
+
+3. Run the playbook.
+
+  ::
+
+    $ ansible-playbook tiny.yml
+
+4. Deactivate the virtualenv or start a new shell.
+5. Move to the parent directory.
+
+  ::
+
+    $ cd ..
+
+6. Run ``downpour``, using tox to set up a python 3.5 virtualenv.
+
+  ::
+
+    $ tox -e venv -- downpour export demo/tiny-resources.yml demo/export
