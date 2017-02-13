@@ -12,13 +12,55 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import itertools
+import os.path
+
 
 class Resolver:
 
-    def __init__(self, cloud, downloader):
+    def __init__(self, cloud, downloader, output_path):
         self.cloud = cloud
         self._memo = set()
         self._downloader = downloader
+        self._output_path = output_path
+        self._uuid_map_file = 'uuids.csv'
+        self._var_counter = itertools.count(1)
+
+    def _mk_var_name(self, slug):
+        name = '{}{:03d}'.format(slug, next(self._var_counter))
+        self._last_var = name
+        return name
+
+    def _map_uuids(self, resource_type, name, old_id, var_expr):
+        pat = '"{}","{}","{}"'.format(
+            resource_type, name, old_id,
+        )
+        line = '{},"{}"'.format(
+            pat, '{{' + self._last_var + '.' + var_expr + '}}',
+        )
+        return {
+            'name': 'Map UUID for {}'.format(name),
+            'lineinfile': {
+                'dest': self._uuid_map_file,
+                'state': 'present',
+                'regexp': pat,
+                'insertafter': 'EOF',
+                'line': line,
+            },
+        }
+
+    def init_tasks(self):
+        yield {
+            'name': 'Initializing UUID mapping file',
+            'lineinfile': {
+                'create': 'yes',
+                'dest': self._uuid_map_file,
+                'state': 'present',
+                'regexp': '"Resource Type","Resource Name","Old","New"',
+                'insertbefore': 'BOF',
+                'line': '"Resource Type","Resource Name","Old","New"',
+            },
+        }
 
     def security_group(self, group):
         if ('security_group', group.id) in self._memo:
@@ -32,7 +74,12 @@ class Resolver:
                 'name': group.name,
                 'description': group.description,
             },
+            'register': self._mk_var_name('sg'),
         }
+        yield self._map_uuids(
+            'security group', group.name, group.id,
+            'secgroup.id',
+        )
         for rule in group.security_group_rules:
             rule_data = {
                 'direction': rule.direction,
@@ -70,7 +117,9 @@ class Resolver:
                 'size': volume.size,
                 'state': 'present',
             },
+            'register': self._mk_var_name('vol'),
         }
+        yield self._map_uuids('volume', volume.name, volume.id, 'volume.id')
 
     def server(self, server, save_state):
         for sg in server.security_groups:
@@ -102,7 +151,9 @@ class Resolver:
         yield {
             'name': 'Creating server {}'.format(server.name),
             'os_server': server_data,
+            'register': self._mk_var_name('server'),
         }
+        yield self._map_uuids('server', server.name, server.id, 'server.id')
 
     def image(self, image):
         filename = self._downloader.add_image(image)
@@ -119,4 +170,6 @@ class Resolver:
         yield {
             'name': 'Creating image {}'.format(image.name),
             'os_image': image_data,
+            'register': self._mk_var_name('img'),
         }
+        yield self._map_uuids('image', image.name, image.id, 'image.id')

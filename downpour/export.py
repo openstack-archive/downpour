@@ -32,8 +32,11 @@ def export_data(cloud, config, args):
         cloud,
         use_progress_bar=(args.progress and (args.verbose_level >= 1)),
     )
-    res = resolver.Resolver(cloud, downloader)
+    res = resolver.Resolver(cloud, downloader, output_path)
     tasks = []
+
+    # Any tasks needed to initialize the output.
+    tasks.extend(res.init_tasks())
 
     # Export independent resources. The resolver handles dependencies
     # automatically.
