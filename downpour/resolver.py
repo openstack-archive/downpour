@@ -13,7 +13,6 @@
 # under the License.
 
 import itertools
-import os.path
 
 
 class Resolver:
