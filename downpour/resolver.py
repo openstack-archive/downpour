@@ -139,6 +139,30 @@ class Resolver:
             'register': self._mk_var_name('net'),
         }
         yield self._map_uuids('network', network.name, network.id, 'network.id')
+        for subnet_id in network.subnets:
+            subnet = self.cloud.get_subnet(subnet_id)
+            os_subnet = {
+                'name': subnet.name,
+                'network_name': network.name,
+                'cidr': subnet.cidr,
+                'state': 'present',
+                'allocation_pool_start': subnet.allocation_pools[0]['start'],
+                'allocation_pool_end': subnet.allocation_pools[0]['end'],
+                'dns_nameservers': subnet.dns_nameservers,
+                'ip_version': subnet.ip_version,
+            }
+            if subnet.gateway_ip:
+                os_subnet['gateway_ip'] = subnet.gateway_ip
+            if subnet.ip_version == 6:
+                os_subnet['ipv6_ra_mode'] = subnet.ipv6_ra_mode
+                os_subnet['ipv6_address_mode'] = subnet.ipv6_address_mode
+            yield {
+                'name': 'Create subnet {} on network {}'.format(subnet.name,
+                                                                network.name),
+                'os_subnet': os_subnet,
+                'register': self._mk_var_name('subnet'),
+            }
+            yield self._map_uuids('subnet', subnet.name, subnet.id, 'subnet.id')
 
     def server(self, server, save_state):
         for sg in server.security_groups:
@@ -152,7 +176,6 @@ class Resolver:
         for net_name in server.networks:
             net_data = self.cloud.get_network(net_name)
             yield from self.network(net_data)
-        # FIXME(dhellmann): Need to handle networks other than 'public'.
         # FIXME(dhellmann): Need to handle public IPs. Use auto_ip?
         # FIXME(dhellmann): For now assume the image exists, but we may
         #                   have to dump and recreate it.
