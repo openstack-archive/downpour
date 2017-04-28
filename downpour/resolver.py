@@ -38,7 +38,7 @@ class Resolver:
             pat, '{{' + self._last_var + '.' + var_expr + '}}',
         )
         return {
-            'name': 'Map UUID for {}'.format(name),
+            'name': 'Map UUID for {} {}'.format(resource_type, name),
             'lineinfile': {
                 'dest': self._uuid_map_file,
                 'state': 'present',
