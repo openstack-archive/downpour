@@ -3,3 +3,5 @@ servers:
   - name: downpour-demo-tiny
 keypairs:
   - name: downpour-demo
+images:
+  - name: cirros-0.3.5-x86_64-disk
