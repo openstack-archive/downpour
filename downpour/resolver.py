@@ -124,6 +124,22 @@ class Resolver:
         }
         yield self._map_uuids('volume', volume.name, volume.id, 'volume.id')
 
+    def network(self, network):
+        if ('network', network.name) in self._memo:
+            return
+        self._memo.add(('network', network.name))
+        yield {
+            'name': 'Create network {}'.format(network.name),
+            'os_network': {
+                'name': network.name,
+                'external': network.get('router:external', False),
+                'shared': network.shared,
+                'state': 'present',
+            },
+            'register': self._mk_var_name('net'),
+        }
+        yield self._map_uuids('network', network.name, network.id, 'network.id')
+
     def server(self, server, save_state):
         for sg in server.security_groups:
             sg_data = self.cloud.get_security_group(sg.name)
@@ -133,6 +149,9 @@ class Resolver:
             vol_data = self.cloud.get_volume(vol.id)
             vol_names.append(vol_data.name)
             yield from self.volume(vol_data, save_state)
+        for net_name in server.networks:
+            net_data = self.cloud.get_network(net_name)
+            yield from self.network(net_data)
         # FIXME(dhellmann): Need to handle networks other than 'public'.
         # FIXME(dhellmann): Need to handle public IPs. Use auto_ip?
         # FIXME(dhellmann): For now assume the image exists, but we may
