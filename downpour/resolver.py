@@ -101,6 +101,9 @@ class Resolver:
             yield {'os_security_group_rule': rule_data}
 
     def volume(self, volume, save_state):
+        if ('volume', volume.name) in self._memo:
+            return
+        self._memo.add(('volume', volume.name))
         # FIXME(dhellmann): For now this only creates new empty
         # volumes, and doesn't handle cases like booting from a volume
         # or creating a volume from an image.
