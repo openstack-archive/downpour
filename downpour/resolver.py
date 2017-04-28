@@ -98,7 +98,10 @@ class Resolver:
                     remote_group = self.cloud.get_security_group(rule.remote_group_id)
                     remote_groups[remote_group.id] = remote_group.name
                 rule_data['remote_group_id'] = remote_groups[rule.remote_group_id]
-            yield {'os_security_group_rule': rule_data}
+            yield {
+                'name': 'Add rule to security group {}'.format(group.name),
+                'os_security_group_rule': rule_data,
+            }
 
     def volume(self, volume, save_state):
         if ('volume', volume.name) in self._memo:
