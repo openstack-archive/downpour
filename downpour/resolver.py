@@ -61,6 +61,22 @@ class Resolver:
             },
         }
 
+    def keypair(self, keypair):
+        if ('keypair', keypair.name) in self._memo:
+            return
+        self._memo.add(('keypair', keypair.name))
+        yield {
+            'name': 'Add public key {}'.format(keypair.name),
+            'os_keypair': {
+                'name': keypair.name,
+                'public_key': keypair.public_key,
+            },
+            'register': self._mk_var_name('key'),
+        }
+        yield self._map_uuids(
+            'keypair', keypair.name, keypair.id, 'key.id',
+        )
+
     def security_group(self, group):
         if ('security_group', group.id) in self._memo:
             return

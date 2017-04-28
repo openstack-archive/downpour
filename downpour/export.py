@@ -42,6 +42,10 @@ def export_data(cloud, config, args):
     # automatically.
     to_export = resources.load(args.resource_file)
 
+    for keypair_info in to_export.keypairs:
+        keypair = cloud.get_keypair(keypair_info.name)
+        tasks.extend(res.keypair(keypair))
+
     for image_info in to_export.images:
         image = cloud.get_image(image_info.name)
         tasks.extend(res.image(image))
