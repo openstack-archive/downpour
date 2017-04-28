@@ -59,7 +59,7 @@
         state: present
         wait: yes
         auto_ip: yes
-        image: 'Ubuntu 16.04'
+        image: 'xenial-server-cloudimg-amd64-disk1'
         flavor: ds512M  # use the devstack flavor
         key_name: downpour-demo
         network: private
