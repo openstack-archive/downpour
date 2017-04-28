@@ -199,6 +199,7 @@ class Resolver:
             'name': 'Creating server {}'.format(server.name),
             'os_server': server_data,
             'register': self._mk_var_name('server'),
+            # FIXME(dhellmann): ssh keypair
         }
         yield self._map_uuids('server', server.name, server.id, 'server.id')
 
