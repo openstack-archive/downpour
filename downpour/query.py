@@ -34,6 +34,7 @@ class ResourceFileEditor:
         self._resources.servers.append({
             'name': info.name,
             'save_state': self._save_state,
+            'key_name': info.key_name,
         })
 
     def save(self):
@@ -56,7 +57,7 @@ def register_command(subparsers):
         help='should the state of the server or volume be saved',
     )
     do_query.add_argument(
-        '--server',
+        '--server-name',
         action='append',
         help='pattern to match against server names',
     )
@@ -66,7 +67,7 @@ def register_command(subparsers):
 def query_data(cloud, config, args):
     editor = ResourceFileEditor(args.resource_file, save_state=args.save_state)
 
-    for pattern in args.server:
+    for pattern in args.server_name:
         LOG.info('searching for servers matching pattern %r', pattern)
         for server_info in cloud.search_servers(name_or_id=pattern):
             editor.add_server(server_info)
