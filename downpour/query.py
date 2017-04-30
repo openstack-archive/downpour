@@ -27,6 +27,7 @@ class ResourceFileEditor:
         self._resources = resources.load(filename, missing_ok=True)
         self._servers = set(s.name for s in self._resources.servers)
         self._images = set(i.name for i in self._resources.images)
+        self._volumes = set(v.name for v in self._resources.volumes)
 
     def add_server(self, info):
         if info.name in self._servers:
@@ -44,6 +45,15 @@ class ResourceFileEditor:
         LOG.info('found image %s to export', info.name)
         self._resources.images.append({
             'name': info.name,
+        })
+
+    def add_volume(self, info):
+        if info.name in self._volumes:
+            return
+        LOG.info('found volume %s to export', info.name)
+        self._resources.volumes.append({
+            'name': info.name,
+            'save_state': self._save_state,
         })
 
     def save(self):
@@ -83,6 +93,12 @@ def register_command(subparsers):
         default=[],
         help='pattern to match against image names',
     )
+    do_query.add_argument(
+        '--volume-name',
+        action='append',
+        default=[],
+        help='pattern to match against volume names',
+    )
     do_query.set_defaults(func=query_data)
 
 
@@ -104,5 +120,15 @@ def query_data(cloud, config, args):
         LOG.info('searching for images matching pattern %r', pattern)
         for info in cloud.search_images(name_or_id=pattern):
             editor.add_image(info)
+
+    for pattern in args.volume_name:
+        LOG.info('searching for available volumes matching pattern %r',
+                 pattern)
+        for info in cloud.search_volumes(
+                name_or_id=pattern,
+                filters={
+                    'status': 'available',
+                }):
+            editor.add_volume(info)
 
     editor.save()
