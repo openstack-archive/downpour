@@ -51,3 +51,9 @@ def load(filename, missing_ok=False):
             s['save_state'] = True
 
     return to_return
+
+
+def save(filename, to_export):
+    "Write the resources file."
+    with open(filename, 'w', encoding='utf-8') as fd:
+        fd.write(to_export.toYAML())
