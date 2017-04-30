@@ -17,6 +17,7 @@ import logging
 import sys
 
 import os_client_config
+import pkg_resources
 import shade
 
 from downpour import export
@@ -26,6 +27,14 @@ from downpour import query
 def main():
     parser = argparse.ArgumentParser()
     config = os_client_config.OpenStackConfig()
+
+    version_info = pkg_resources.get_distribution('os-downpour').version
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s ' + version_info,
+        help='show the program version and exit',
+    )
 
     verbose_group = parser.add_mutually_exclusive_group()
     verbose_group.add_argument(
