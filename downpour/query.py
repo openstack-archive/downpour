@@ -14,7 +14,7 @@
 
 import logging
 
-import yaml
+from downpour import resources
 
 LOG = logging.getLogger(__name__)
 
@@ -28,8 +28,32 @@ def register_command(subparsers):
         'resource_file',
         help='the name of the file listing resources to be updated',
     )
+    do_query.add_argument(
+        '--save-state',
+        action='store_true',
+        default=False,
+        help='should the state of the server or volume be saved',
+    )
+    do_query.add_argument(
+        '--server',
+        action='append',
+        help='pattern to match against server names',
+    )
     do_query.set_defaults(func=query_data)
 
 
 def query_data(cloud, config, args):
-    raise NotImplementedError('query not implemented')
+    to_export = resources.load(args.resource_file, missing_ok=True)
+    servers = set(s.name for s in to_export.servers)
+
+    for pattern in args.server:
+        LOG.info('searching for server %r', pattern)
+        for server_info in cloud.search_servers(name_or_id=pattern):
+            if server_info.name not in servers:
+                LOG.info('found server %s to export', server_info.name)
+                to_export.servers.append({
+                    'name': server_info.name,
+                    'save_state': args.save_state,
+                })
+
+    resources.save(args.resource_file, to_export)

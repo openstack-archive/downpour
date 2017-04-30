@@ -63,3 +63,4 @@ releasenotes/build
 /demo/*.retry
 /demo/venv
 /demo/export/*
+/demo/query-resources.yml
