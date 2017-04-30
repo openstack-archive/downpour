@@ -3,11 +3,31 @@
   connection: local
   gather_facts: no
   tasks:
-    # Set up the keypair, saving the values locally.
+    # Set up the keypair we will use with the server,
+    # saving the values locally.
     - name: Creating key pair downpour-demo
       os_keypair:
         state: present
         name: downpour-demo
+      register: keypair
+    - name: Create local public key
+      local_action:
+        module: copy
+        content: "{{ keypair.key.public_key }}"
+        dest: "{{ inventory_dir }}/keys/{{ keypair.key.name }}.pub"
+        mode: 0600
+      when: "'private_key' in keypair.key"  # only save key if we created a new key
+    - name: Create local private key
+      local_action:
+        module: copy
+        content: "{{ keypair.key.private_key }}"
+        dest: "{{ inventory_dir }}/keys/{{ keypair.key.name }}"
+        mode: 0600
+      when: "'private_key' in keypair.key"  # only save key if we created a new key
+    - name: Creating key pair downpour-demo2
+      os_keypair:
+        state: present
+        name: downpour-demo2
       register: keypair
     - name: Create local public key
       local_action:

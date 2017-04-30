@@ -182,7 +182,7 @@ class Resolver:
             }
             yield self._map_uuids('subnet', subnet.name, subnet.id, 'subnet.id')
 
-    def server(self, server, save_state):
+    def server(self, server, save_state, key_name=None):
         # The ssh key needed to login to the server.
         keypair = self.cloud.get_keypair(server.key_name)
         yield from self.keypair(keypair)
@@ -215,6 +215,9 @@ class Resolver:
             'nics': list(server.networks.keys()),
             # 'image': image.name if image else server.image.id,
         }
+        key_name = key_name or server.key_name
+        if key_name:
+            server_data['key_name'] = key_name
         if vol_names:
             server_data['volumes'] = vol_names
         yield {

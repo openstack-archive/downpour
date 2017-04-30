@@ -74,7 +74,9 @@ def export_data(cloud, config, args):
 
     for server_info in to_export.servers:
         server = cloud.get_server(server_info.name)
-        tasks.extend(res.server(server, save_state=server_info.save_state))
+        tasks.extend(res.server(server,
+                                save_state=server_info.save_state,
+                                key_name=server_info.get('key_name')))
 
     playbook = [
         # The default playbook is configured to run instructions
