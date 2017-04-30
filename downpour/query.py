@@ -19,6 +19,27 @@ from downpour import resources
 LOG = logging.getLogger(__name__)
 
 
+class ResourceFileEditor:
+
+    def __init__(self, filename, save_state):
+        self._filename = filename
+        self._save_state = save_state
+        self._resources = resources.load(filename, missing_ok=True)
+        self._servers = set(s.name for s in self._resources.servers)
+
+    def add_server(self, info):
+        if info.name in self._servers:
+            return
+        LOG.info('found server %s to export', info.name)
+        self._resources.servers.append({
+            'name': info.name,
+            'save_state': self._save_state,
+        })
+
+    def save(self):
+        resources.save(self._filename, self._resources)
+
+
 def register_command(subparsers):
     do_query = subparsers.add_parser(
         'query',
@@ -43,17 +64,11 @@ def register_command(subparsers):
 
 
 def query_data(cloud, config, args):
-    to_export = resources.load(args.resource_file, missing_ok=True)
-    servers = set(s.name for s in to_export.servers)
+    editor = ResourceFileEditor(args.resource_file, save_state=args.save_state)
 
     for pattern in args.server:
-        LOG.info('searching for server %r', pattern)
+        LOG.info('searching for servers matching pattern %r', pattern)
         for server_info in cloud.search_servers(name_or_id=pattern):
-            if server_info.name not in servers:
-                LOG.info('found server %s to export', server_info.name)
-                to_export.servers.append({
-                    'name': server_info.name,
-                    'save_state': args.save_state,
-                })
+            editor.add_server(server_info)
 
-    resources.save(args.resource_file, to_export)
+    editor.save()
