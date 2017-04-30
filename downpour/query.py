@@ -59,7 +59,14 @@ def register_command(subparsers):
     do_query.add_argument(
         '--server-name',
         action='append',
+        default=[],
         help='pattern to match against server names',
+    )
+    do_query.add_argument(
+        '--server-flavor',
+        action='append',
+        default=[],
+        help='server flavor(s) to capture',
     )
     do_query.set_defaults(func=query_data)
 
@@ -70,6 +77,12 @@ def query_data(cloud, config, args):
     for pattern in args.server_name:
         LOG.info('searching for servers matching pattern %r', pattern)
         for server_info in cloud.search_servers(name_or_id=pattern):
+            editor.add_server(server_info)
+
+    for flavor in args.server_flavor:
+        LOG.info('searching for servers using flavor %r', flavor)
+        for server_info in cloud.search_servers(
+                filters={'flavor': {'id': flavor}}):
             editor.add_server(server_info)
 
     editor.save()
