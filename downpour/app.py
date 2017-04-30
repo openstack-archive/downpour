@@ -59,31 +59,8 @@ def main():
     config.register_argparse_arguments(parser, sys.argv, None)
     subparsers = parser.add_subparsers(title='commands')
 
-    do_export = subparsers.add_parser(
-        'export',
-        help='export data',
-    )
-    do_export.add_argument(
-        'resource_file',
-        help='the name of the file listing resources to be exported',
-    )
-    do_export.add_argument(
-        'output_path',
-        default='.',
-        nargs='?',
-        help='the name of a directory to use for output file(s)',
-    )
-    do_export.set_defaults(func=export.export_data)
-
-    do_query = subparsers.add_parser(
-        'query',
-        help='query to build an export list',
-    )
-    do_query.add_argument(
-        'resource_file',
-        help='the name of the file listing resources to be updated',
-    )
-    do_query.set_defaults(func=query.query_data)
+    export.register_command(subparsers)
+    query.register_command(subparsers)
 
     args = parser.parse_args(sys.argv[1:])
 

@@ -12,6 +12,24 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
+
+import yaml
+
+LOG = logging.getLogger(__name__)
+
+
+def register_command(subparsers):
+    do_query = subparsers.add_parser(
+        'query',
+        help='query to build an export list',
+    )
+    do_query.add_argument(
+        'resource_file',
+        help='the name of the file listing resources to be updated',
+    )
+    do_query.set_defaults(func=query_data)
+
 
 def query_data(cloud, config, args):
     raise NotImplementedError('query not implemented')

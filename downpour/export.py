@@ -24,6 +24,24 @@ from downpour import resources
 LOG = logging.getLogger(__name__)
 
 
+def register_command(subparsers):
+    do_export = subparsers.add_parser(
+        'export',
+        help='export data',
+    )
+    do_export.add_argument(
+        'resource_file',
+        help='the name of the file listing resources to be exported',
+    )
+    do_export.add_argument(
+        'output_path',
+        default='.',
+        nargs='?',
+        help='the name of a directory to use for output file(s)',
+    )
+    do_export.set_defaults(func=export_data)
+
+
 def export_data(cloud, config, args):
     output_path = args.output_path
 
