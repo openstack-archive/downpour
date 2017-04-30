@@ -26,6 +26,7 @@ class ResourceFileEditor:
         self._save_state = save_state
         self._resources = resources.load(filename, missing_ok=True)
         self._servers = set(s.name for s in self._resources.servers)
+        self._images = set(i.name for i in self._resources.images)
 
     def add_server(self, info):
         if info.name in self._servers:
@@ -35,6 +36,14 @@ class ResourceFileEditor:
             'name': info.name,
             'save_state': self._save_state,
             'key_name': info.key_name,
+        })
+
+    def add_image(self, info):
+        if info.name in self._images:
+            return
+        LOG.info('found image %s to export', info.name)
+        self._resources.images.append({
+            'name': info.name,
         })
 
     def save(self):
@@ -68,6 +77,12 @@ def register_command(subparsers):
         default=[],
         help='server flavor(s) to capture',
     )
+    do_query.add_argument(
+        '--image-name',
+        action='append',
+        default=[],
+        help='pattern to match against image names',
+    )
     do_query.set_defaults(func=query_data)
 
 
@@ -84,5 +99,10 @@ def query_data(cloud, config, args):
         for server_info in cloud.search_servers(
                 filters={'flavor': {'id': flavor}}):
             editor.add_server(server_info)
+
+    for pattern in args.image_name:
+        LOG.info('searching for images matching pattern %r', pattern)
+        for info in cloud.search_images(name_or_id=pattern):
+            editor.add_image(info)
 
     editor.save()
