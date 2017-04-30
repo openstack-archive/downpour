@@ -19,7 +19,7 @@ import munch
 LOG = logging.getLogger(__name__)
 
 
-def load(filename):
+def load(filename, missing_ok=False):
     "Read the file and return the parsed data in a consistent format."
     LOG.info('loading resource list from %s', filename)
 
@@ -31,9 +31,14 @@ def load(filename):
         images=[],
     )
 
-    with open(filename, 'r', encoding='utf-8') as fd:
-        contents = munch.Munch.fromYAML(fd.read())
-    to_return.update(contents)
+    try:
+        with open(filename, 'r', encoding='utf-8') as fd:
+            contents = munch.Munch.fromYAML(fd.read())
+    except FileNotFoundError:
+        if not missing_ok:
+            raise
+    else:
+        to_return.update(contents)
 
     # Ensure all entries have consistent sets of keys so the rest of
     # the app doesn't have to check every time it wants to use a
