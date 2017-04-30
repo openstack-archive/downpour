@@ -1,0 +1,8 @@
+Code-Review+2: Doug Hellmann <doug@doughellmann.com>
+Workflow+1: Doug Hellmann <doug@doughellmann.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sun, 30 Apr 2017 22:23:45 +0000
+Reviewed-on: https://review.openstack.org/461323
+Project: openstack/downpour
+Branch: refs/heads/master
