@@ -183,17 +183,23 @@ class Resolver:
             yield self._map_uuids('subnet', subnet.name, subnet.id, 'subnet.id')
 
     def server(self, server, save_state):
+        # The ssh key needed to login to the server.
+        keypair = self.cloud.get_keypair(server.key_name)
+        yield from self.keypair(keypair)
+        # The security groups and other network settings for the
+        # server.
         for sg in server.security_groups:
             sg_data = self.cloud.get_security_group(sg.name)
             yield from self.security_group(sg_data)
+        for net_name in server.networks:
+            net_data = self.cloud.get_network(net_name)
+            yield from self.network(net_data)
+        # Any volumes attached to the server.
         vol_names = []
         for vol in server.volumes:
             vol_data = self.cloud.get_volume(vol.id)
             vol_names.append(vol_data.name)
             yield from self.volume(vol_data, save_state)
-        for net_name in server.networks:
-            net_data = self.cloud.get_network(net_name)
-            yield from self.network(net_data)
         # FIXME(dhellmann): Need to handle public IPs. Use auto_ip?
         # FIXME(dhellmann): For now assume the image exists, but we may
         #                   have to dump and recreate it.
