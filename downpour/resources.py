@@ -29,6 +29,7 @@ def load(filename, missing_ok=False):
         servers=[],
         volumes=[],
         images=[],
+        keypairs=[],
     )
 
     try:
