@@ -23,3 +23,4 @@ With tox_ installed, experiment via::
 
 * Free software: Apache license
 * Source: http://git.openstack.org/cgit/openstack/downpour
+* Documentation: http://downpour.readthedocs.io/en/latest/
