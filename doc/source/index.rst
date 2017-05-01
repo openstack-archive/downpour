@@ -1,25 +1,25 @@
-.. downpour documentation master file, created by
-   sphinx-quickstart on Tue Jul  9 22:26:36 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+==================================================
+ downpour -- OpenStack Tenant Data Migration Tool
+==================================================
 
-Welcome to downpour's documentation!
-========================================================
+downpour exports tenant data from an OpenStack cloud to create a set
+of Ansible_ playbooks for importing the data into another cloud.
 
-Contents:
+.. note::
+
+  The project is in a very very early prototyping stage.
+
+.. _ansible: https://www.ansible.com
+
+Contents
+========
 
 .. toctree::
    :maxdepth: 2
 
-   readme
+   background
    installation
    usage
+   resource_file
    contributing
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   glossary

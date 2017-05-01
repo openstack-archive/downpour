@@ -1,6 +1,6 @@
-==================================================
- downpour -- OpenStack Tenant Data Migration Tool
-==================================================
+===================================================
+ downpour --- OpenStack Tenant Data Migration Tool
+===================================================
 
 downpour exports tenant data from an OpenStack cloud to create a set
 of Ansible playbooks for importing the data into another cloud.

@@ -1,7 +1,8 @@
 # Resource file for downpour using the instance created in tiny.yml.
 servers:
   - name: downpour-demo-tiny
-    # Create the server using a separate key than it was created with in tiny.yml.
+    # Create the server using a separate key than
+    # it was created with in tiny.yml.
     key_name: downpour-demo2
 keypairs:
   - name: downpour-demo
