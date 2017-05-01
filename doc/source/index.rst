@@ -21,5 +21,6 @@ Contents
    installation
    usage
    resource_file
+   history
    contributing
    glossary
