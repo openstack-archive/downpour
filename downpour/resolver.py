@@ -199,6 +199,7 @@ class Resolver:
         # The ssh key needed to login to the server.
         keypair = self.cloud.get_keypair(server.key_name)
         yield from self.keypair(keypair)
+
         # The security groups and other network settings for the
         # server.
         for sg in server.security_groups:
@@ -207,26 +208,45 @@ class Resolver:
         for net_name in server.networks:
             net_data = self.cloud.get_network(net_name)
             yield from self.network(net_data)
-        # Any volumes attached to the server.
-        vol_names = []
-        for vol in server.volumes:
-            vol_data = self.cloud.get_volume(vol.id)
-            vol_names.append(vol_data.name)
-            yield from self.volume(vol_data, save_state)
         # FIXME(dhellmann): Need to handle public IPs. Use auto_ip?
-        # FIXME(dhellmann): For now assume the image exists, but we may
-        #                   have to dump and recreate it.
-        # image = self.cloud.get_image(server.image.id)
-        # pprint.pprint(image)
+
+        # Any volumes attached to the server.
+        # FIXME(dhellmann): The server needs to be stopped and the
+        # volumes need to be detached before this step.
+        vol_names = []
+        # for vol in server.volumes:
+        #     vol_data = self.cloud.get_volume(vol.id)
+        #     vol_names.append(vol_data.name)
+        #     yield from self.volume(vol_data, save_state)
+
+        # The main portion of the server image.
         # FIXME(dhellmann): It looks like ceph-backed servers have an
         # image ID set to their volume or something? It's not a public
         # image visible through the glance API.
+        if save_state:
+            image_name = 'downpour-server-capture-{}'.format(server.id)
+            image = self.cloud.get_image(image_name)
+            if image:
+                LOG.info('found existing capture of server %s in %s',
+                         server.name, image_name)
+            else:
+                LOG.info('capturing server %s to image %s',
+                         server.name, image_name)
+                image = self.cloud.create_image_snapshot(
+                    name=image_name,
+                    server=server,
+                    wait=True,
+                )
+        else:
+            image = self.cloud.get_image(server.image.id)
+        yield from self.image(image)
+
         server_data = {
             'name': server.name,
             'state': 'present',
             # Attach to the networks by name.
             'nics': list(server.networks.keys()),
-            # 'image': image.name if image else server.image.id,
+            'image': image.name,
         }
         key_name = key_name or server.key_name
         if key_name:
@@ -237,7 +257,6 @@ class Resolver:
             'name': 'Creating server {}'.format(server.name),
             'os_server': server_data,
             'register': self._mk_var_name('server'),
-            # FIXME(dhellmann): ssh keypair
         }
         yield self._map_uuids('server', server.name, server.id, 'server.id')
 
