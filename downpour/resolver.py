@@ -13,6 +13,9 @@
 # under the License.
 
 import itertools
+import logging
+
+LOG = logging.getLogger(__name__)
 
 
 class Resolver:
@@ -122,22 +125,32 @@ class Resolver:
         if ('volume', volume.name) in self._memo:
             return
         self._memo.add(('volume', volume.name))
-        # FIXME(dhellmann): For now this only creates new empty
-        # volumes, and doesn't handle cases like booting from a volume
-        # or creating a volume from an image.
-        #
-        # FIXME(dhellmann): Need to snapshot the volume and then
-        # download the results.
         if save_state:
-            self._downloader.add_volume(volume)
+            image_name = 'volume-capture-{}'.format(volume.id)
+            image_info = self.cloud.get_image(image_name)
+            if image_info:
+                LOG.info('found existing capture of volume %s in %s',
+                         volume.name, image_name)
+            else:
+                LOG.info('creating image from volume %s as %s',
+                         volume.name, image_name)
+                image_info = self.cloud.create_image(
+                    name=image_name,
+                    volume=volume.id,
+                    wait=True,
+                )
+            yield from self.image(image_info)
+        os_volume = {
+            'display_name': volume.display_name,
+            'display_description': volume.display_description,
+            'size': volume.size,
+            'state': 'present',
+        }
+        if save_state:
+            os_volume['image'] = image_name
         yield {
             'name': 'Create volume {}'.format(volume.name),
-            'os_volume': {
-                'display_name': volume.display_name,
-                'display_description': volume.display_description,
-                'size': volume.size,
-                'state': 'present',
-            },
+            'os_volume': os_volume,
             'register': self._mk_var_name('vol'),
         }
         yield self._map_uuids('volume', volume.name, volume.id, 'volume.id')
