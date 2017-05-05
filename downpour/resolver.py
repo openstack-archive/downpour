@@ -241,18 +241,33 @@ class Resolver:
             image = self.cloud.get_image(server.image.id)
         yield from self.image(image)
 
+        flavor = self.cloud.get_flavor(server.flavor.id)
+
         server_data = {
             'name': server.name,
             'state': 'present',
-            # Attach to the networks by name.
-            'nics': list(server.networks.keys()),
             'image': image.name,
+            # FIXME(dhellmann): Need to be more flexible about
+            # specifying the flavor. Input parameter? Use RAM? Use
+            # flavor_include?
+            'flavor': flavor.name,
+            # 'flavor_ram': flavor.ram,
         }
+
         key_name = key_name or server.key_name
         if key_name:
             server_data['key_name'] = key_name
+
         if vol_names:
             server_data['volumes'] = vol_names
+
+        # Attach to the networks by name.
+        nics = []
+        for n in server.networks.keys():
+            nics.append({'net-name': n})
+        if nics:
+            server_data['nics'] = nics
+
         yield {
             'name': 'Creating server {}'.format(server.name),
             'os_server': server_data,
