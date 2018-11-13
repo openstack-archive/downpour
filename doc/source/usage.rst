@@ -73,7 +73,7 @@ by the exporter.
    ``virtualenv`` to install the tools, you will need to install them
    in separate virtual environments.
 
-Ansible uses uses `os-client-config`_ for settings related to
+Ansible uses `os-client-config`_ for settings related to
 accessing the cloud. The simplest way to configure the cloud is via a
 ``clouds.yaml`` file, but any mechanism supported by Ansible will
 work. The credentials used for the import phase do not need to be the
