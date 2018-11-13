@@ -7,7 +7,7 @@ of Ansible_ playbooks for importing the data into another cloud.
 
 .. note::
 
-  The project is in a very very early prototyping stage.
+  The project is in a very early prototyping stage.
 
 .. _ansible: https://www.ansible.com
 
