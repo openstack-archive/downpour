@@ -1,5 +1,0 @@
-=================
- Release History
-=================
-
-.. release-notes::

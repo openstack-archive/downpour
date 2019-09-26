@@ -1,6 +1,0 @@
-[run]
-branch = True
-source = downpour
-
-[report]
-ignore_errors = True
